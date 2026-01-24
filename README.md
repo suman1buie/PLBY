@@ -1,4 +1,4 @@
-# Simple TCP Load Balancer (Round Robin)
+# Simple Load Balancer support TCP/HTTP based routing (Round Robin)/ Reverse proxy / Static server
 
 This project is a **simple TCP-based load balancer** implemented in Python. It distributes incoming client traffic to multiple backend TCP servers using the **Round Robin** scheduling algorithm.
 
