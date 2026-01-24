@@ -1,0 +1,13 @@
+[[server]]
+
+listen = "0.0.0.0:8200"
+
+[[server.forward]]
+
+algorithm = "WRR"
+
+backends = [
+    { address = "127.0.0.1:8080"},
+    { address = "127.0.0.1:8081"},
+    { address = "127.0.0.1:8082"},
+]
