@@ -16,13 +16,13 @@ def load_config():
             config = tomllib.load(config_file)
             server = config.get("server")[0].get("listen")
             forward_server = config.get("server")[0].get("forward")
-            proxy_server = {"host":server.split(":")[0], "port":server.split(":")[1]}
+            proxy_server = {"host": server.split(":")[0], "port": server.split(":")[1]}
             forward_servers = []
             for server in forward_server[0].get("backends"):
                 server_address = server.get("address")
                 forward_servers.append({
-                    "host":server_address.split(":")[0],
-                    "port":server_address.split(":")[1]
+                    "host": server_address.split(":")[0],
+                    "port": server_address.split(":")[1]
                 })
             print(proxy_server, forward_servers)
             return proxy_server, forward_servers
