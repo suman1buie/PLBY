@@ -4,37 +4,37 @@ import threading
 from read_config import load_config
 
 lock = threading.Lock()
-PROXY_SERVER, FORWORD_SERVER_LIST = load_config()
-cnt = 0
+PROXY_SERVER, FORWARD_SERVER_LIST = load_config()
+request_count = 0
 
 
-def pipe(src, dst):
+def pipe(source, destination):
     try:
         while True:
-            data = src.recv(4096)
+            data = source.recv(4096)
             if not data:
                 break
-            dst.sendall(data)
+            destination.sendall(data)
     finally:
-        src.close()
-        dst.close()
+        source.close()
+        destination.close()
 
 
 def forward_request_to_server(client_socket):
     try:
-        global cnt
+        global request_count
 
         with lock:
-            _server = FORWORD_SERVER_LIST[cnt % len(FORWORD_SERVER_LIST)]
-            cnt+=1
-            host, port = _server.host, _server.port
+            backend_server = FORWARD_SERVER_LIST[request_count % len(FORWARD_SERVER_LIST)]
+            request_count += 1
+            host, port = backend_server["host"], int(backend_server["port"])
 
         print(f"Forwarding request to backend localhost:{port}")
 
-        backend_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        backend_sock.connect((host, port))
-        threading.Thread(target=pipe, args=(client_socket, backend_sock), daemon=True).start()
-        threading.Thread(target=pipe, args=(backend_sock, client_socket), daemon=True).start()
+        backend_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        backend_socket.connect((host, port))
+        threading.Thread(target=pipe, args=(client_socket, backend_socket), daemon=True).start()
+        threading.Thread(target=pipe, args=(backend_socket, client_socket), daemon=True).start()
 
         print("Response sent back to client")
 
@@ -43,16 +43,16 @@ def forward_request_to_server(client_socket):
 
 def run_proxy_server():
     pool = ThreadPoolExecutor(max_workers=4)
-    lb_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    lb_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    lb_sock.bind((PROXY_SERVER.get("host", "0.0.0.0"), int(PROXY_SERVER.get("port", 8000))))
-    lb_sock.listen(128)
+    load_balancer_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    load_balancer_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    load_balancer_socket.bind((PROXY_SERVER.get("host", "0.0.0.0"), int(PROXY_SERVER.get("port", 8000))))
+    load_balancer_socket.listen(128)
 
     print(f"Load balancer listening on port {PROXY_SERVER.get("port", 8000)}...")
 
     while True:
-        client_socket, addr = lb_sock.accept()
-        print(f"Request coming from {addr[0]}:{addr[1]}")
+        client_socket, address = load_balancer_socket.accept()
+        print(f"Request coming from {address[0]}:{address[1]}")
         pool.submit(forward_request_to_server, client_socket)
 
 
