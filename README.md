@@ -112,7 +112,7 @@ backends = [
 | Key | Description |
 |-----|-------------|
 | `listen` | Address and port the load balancer binds to |
-| `algorithm` | Balancing algorithm (`WRR` — Weighted Round Robin) |
+| `algorithm` | Balancing algorithm (currently uses Round Robin) |
 | `backends` | List of backend servers that receive forwarded traffic |
 
 ---
