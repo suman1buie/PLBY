@@ -1,28 +1,78 @@
-# Simple Load Balancer support TCP/HTTP based routing (Round Robin)/ Reverse proxy / Static server
+<div align="center">
 
-This project is a **simple TCP-based load balancer** implemented in Python. It distributes incoming client traffic to multiple backend TCP servers using the **Round Robin** scheduling algorithm. Configuration is managed through a TOML file.
+# ⚡ PLBY — Python Load Balancer
+
+### A lightweight TCP load balancer &amp; reverse proxy built from scratch in Python
+
+[![Pylint](https://github.com/suman1buie/PLBY/actions/workflows/pylint.yml/badge.svg)](https://github.com/suman1buie/PLBY/actions/workflows/pylint.yml)
+![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
+![Status](https://img.shields.io/badge/Status-Active-success)
+![License](https://img.shields.io/badge/License-MIT-blue)
+
+<br/>
+
+<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=22&pause=1000&color=3776AB&center=true&vCenter=true&width=500&lines=Round+Robin+Load+Balancing;TCP+Reverse+Proxy;TOML-Based+Configuration;Built+with+Pure+Python" alt="Typing SVG" />
+
+<br/>
 
 > ⚠️ **Note:** This project is in an early stage and is intended for learning and experimentation purposes only.
+
+</div>
+
+---
+
+## 📖 Table of Contents
+
+- [Features](#-features)
+- [Architecture](#-architecture)
+- [Prerequisites](#-prerequisites)
+- [Project Structure](#-project-structure)
+- [Configuration](#%EF%B8%8F-configuration)
+- [Setup & Running](#%EF%B8%8F-setup--running-the-project)
+- [Expected Output](#-expected-output)
+- [Future Improvements](#-future-improvements)
+- [Contributing](#-contributing)
 
 ---
 
 ## 📌 Features
 
-* TCP reverse proxy / load balancer
-* Round Robin traffic distribution
-* Multiple backend servers
-* TOML-based configuration (`config.toml`)
-* Simple client to test load balancing behavior
+| Feature | Description |
+|---------|-------------|
+| 🔀 **Round Robin** | Distributes requests evenly across backend servers |
+| 🔁 **TCP Reverse Proxy** | Transparently forwards client connections to backends |
+| 🖥️ **Multi-Backend** | Supports multiple backend server instances |
+| 📝 **TOML Config** | Simple, human-readable configuration via `config.toml` |
+| 🧪 **Test Client** | Built-in client to verify load balancing behavior |
+| 🧵 **Threaded** | Handles concurrent connections using thread pools |
+
+---
+
+## 🏗️ Architecture
+
+```mermaid
+graph LR
+    C1[👤 Client 1] --> LB["⚡ PLBY<br/>Load Balancer<br/>(port 8200)"]
+    C2[👤 Client 2] --> LB
+    C3[👤 Client 3] --> LB
+    LB -->|Request 1| S1["🖥️ Server<br/>:8080"]
+    LB -->|Request 2| S2["🖥️ Server<br/>:8081"]
+    LB -->|Request 3| S3["🖥️ Server<br/>:8082"]
+
+    style LB fill:#3776AB,stroke:#2B5EA7,color:#fff
+    style S1 fill:#2ECC71,stroke:#27AE60,color:#fff
+    style S2 fill:#2ECC71,stroke:#27AE60,color:#fff
+    style S3 fill:#2ECC71,stroke:#27AE60,color:#fff
+```
 
 ---
 
 ## 🧰 Prerequisites
 
-* Python **3.11+** (required for the built-in `tomllib` module used to parse `config.toml`)
-
-You can verify your Python version using:
+* **Python 3.11+** — required for the built-in `tomllib` module
 
 ```bash
+# Verify your Python version
 python3 --version
 ```
 
@@ -31,20 +81,20 @@ python3 --version
 ## 📁 Project Structure
 
 ```
-.
-├── config.toml          # Load balancer configuration (listen address, backends)
-├── server.py            # Backend TCP server
-├── client.py            # Test client to generate TCP requests
-└── src/
-    ├── loadbalancer.py  # TCP load balancer (reverse proxy)
-    └── read_config.py   # Config parser for config.toml
+PLBY/
+├── 📄 config.toml          # Load balancer configuration
+├── 🖥️ server.py             # Backend TCP server
+├── 👤 client.py             # Test client for requests
+└── 📂 src/
+    ├── ⚡ loadbalancer.py   # TCP load balancer (reverse proxy)
+    └── 📝 read_config.py    # TOML config parser
 ```
 
 ---
 
 ## ⚙️ Configuration
 
-The load balancer is configured via `config.toml` in the project root. The default configuration looks like this:
+The load balancer is configured via `config.toml` in the project root:
 
 ```toml
 [[server]]
@@ -59,20 +109,11 @@ backends = [
 ]
 ```
 
-* **`listen`** – The address and port the load balancer binds to.
-* **`algorithm`** – The balancing algorithm (currently configured as `WRR`; the implementation uses Round Robin).
-* **`backends`** – The list of backend servers that receive forwarded traffic.
-
-You can edit `config.toml` to change the listen port or add/remove backend servers.
-
----
-
-## 🚀 How It Works
-
-* The **load balancer** reads `config.toml` and listens on the configured address (default **`0.0.0.0:8200`**).
-* Multiple backend **TCP servers** listen on the ports specified in the config.
-* Incoming client requests are forwarded to backend servers using **Round Robin**.
-* Each request is handled by a different server in sequence.
+| Key | Description |
+|-----|-------------|
+| `listen` | Address and port the load balancer binds to |
+| `algorithm` | Balancing algorithm (`WRR` — Weighted Round Robin) |
+| `backends` | List of backend servers that receive forwarded traffic |
 
 ---
 
@@ -87,7 +128,7 @@ cd PLBY
 
 ### 2️⃣ Start Backend Servers
 
-Open **three separate terminals** and start a server on each port listed in `config.toml`:
+Open **three separate terminals** and start a server on each port:
 
 ```bash
 python3 server.py 8080
@@ -95,42 +136,26 @@ python3 server.py 8081
 python3 server.py 8082
 ```
 
-Each server will print a message like:
-
-```
-Server running on port 8080...
-```
-
 ### 3️⃣ Start the Load Balancer
-
-In a new terminal, run:
 
 ```bash
 cd src
 python3 loadbalancer.py
 ```
 
-This will start the load balancer on the address configured in `config.toml` (default `0.0.0.0:8200`):
-
-```
-Load balancer listening on port 8200...
-```
-
 ### 4️⃣ Run the Client
-
-In another terminal, send test requests:
 
 ```bash
 python3 client.py
 ```
 
-> **Note:** The client is currently hardcoded to connect to `localhost:8081`. To test through the load balancer, update the port in `client.py` to match the load balancer's listen port (default `8200`).
+> **💡 Tip:** The client is currently hardcoded to connect to `localhost:8081`. To test through the load balancer, update the port in `client.py` to `8200`.
 
 ---
 
 ## ✅ Expected Output
 
-When running the client through the load balancer, you should see responses like:
+When running through the load balancer, requests are distributed in Round Robin:
 
 ```
 Hi from server 8080
@@ -140,19 +165,30 @@ Hi from server 8080
 ...
 ```
 
-Each response comes from a different backend server in Round Robin sequence.
+Each response comes from a different backend server in sequence.
 
 ---
 
 ## 🔒 Future Improvements
 
-This is just the beginning. Planned enhancements include:
+- [ ] 🛡️ Security enhancements (TLS support)
+- [ ] 💓 Health checks for backend servers
+- [ ] ⚖️ Weighted Round Robin with configurable weights
+- [ ] 🔄 Fault tolerance & automatic failover
+- [ ] 📊 Request metrics & monitoring dashboard
+- [ ] 🌐 HTTP layer 7 routing support
 
-* Security improvements
-* Fault tolerance
-* Health checks for backend servers
-* Configurable server pools
-* Better error handling
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Feel free to:
+
+1. 🍴 Fork the repository
+2. 🌿 Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. 💾 Commit your changes (`git commit -m 'Add amazing feature'`)
+4. 📤 Push to the branch (`git push origin feature/amazing-feature`)
+5. 🔃 Open a Pull Request
 
 ---
 
@@ -162,4 +198,10 @@ This project is for **educational purposes only** and is not production-ready.
 
 ---
 
-Happy Coding 🚀
+<div align="center">
+
+### ⭐ Star this repo if you find it useful!
+
+Made with ❤️ by [suman1buie](https://github.com/suman1buie)
+
+</div>
