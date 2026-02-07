@@ -1,12 +1,16 @@
+"""Server module for handling incoming client connections."""
+
 import os
 import socket
 import sys
 from concurrent.futures import ThreadPoolExecutor
 
-def receive_data(client_socket):
+
+def receive_data(sock):
+    """Receive all data from a socket connection."""
     data = b""
     while True:
-        chunk = client_socket.recv(2048)
+        chunk = sock.recv(2048)
         if not chunk:
             break
         data += chunk
@@ -15,28 +19,30 @@ def receive_data(client_socket):
     return data
 
 
-def handle_request(client_socket, address, port):
+def handle_request(sock, address, server_port):
+    """Handle a single client request and send a response."""
     try:
-        client_socket.settimeout(5)
-        data = receive_data(client_socket=client_socket)
+        sock.settimeout(5)
+        data = receive_data(sock=sock)
 
         print(f"Received from {address}: {data.decode()}")
 
-        client_socket.sendall(
-            f"Hi from server {port}".encode()
+        sock.sendall(
+            f"Hi from server {server_port}".encode()
         )
 
     except socket.timeout:
         print(f"Timeout from {address}")
 
-    except Exception as e:
+    except OSError as e:
         print(f"Error handling {address}: {e}")
 
     finally:
-        client_socket.close()
+        sock.close()
 
 
-if __name__ == "__main__":
+def main():
+    """Start the server and listen for incoming connections."""
     pool = ThreadPoolExecutor(max_workers=os.cpu_count())
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -59,3 +65,7 @@ if __name__ == "__main__":
     finally:
         server_socket.close()
         pool.shutdown(wait=True)
+
+
+if __name__ == "__main__":
+    main()
