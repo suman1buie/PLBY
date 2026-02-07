@@ -1,8 +1,11 @@
-import os
+"""Client module for sending concurrent requests to the server."""
+
 import socket
 from concurrent.futures import ThreadPoolExecutor
 
+
 def send_request(request):
+    """Send a single request to the server and print the response."""
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.connect(("localhost", 8081))
 
@@ -17,6 +20,6 @@ if __name__ == "__main__":
     pool = ThreadPoolExecutor(max_workers=4)
     for request_number in range(1, 10):
         message = f"sending request from {request_number}"
-        pool.submit(send_request,message,)
+        pool.submit(send_request, message)
 
     print("Done sending all requests")

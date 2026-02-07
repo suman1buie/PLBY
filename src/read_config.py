@@ -1,8 +1,11 @@
+"""Configuration reader module for loading server settings from TOML files."""
+
 import os
 import tomllib
 
 
 def load_config():
+    """Load and parse the server configuration from config.toml."""
     try:
         base_directory = os.path.dirname(os.path.abspath(__file__))
         config_file_path = os.path.normpath(
@@ -10,21 +13,27 @@ def load_config():
         )
 
         if not os.path.exists(config_file_path):
-            raise FileNotFoundError(f"Config file not found: {config_file_path}")
+            raise FileNotFoundError(
+                f"Config file not found: {config_file_path}"
+            )
 
         with open(config_file_path, "rb") as config_file:
             config = tomllib.load(config_file)
             server = config.get("server")[0].get("listen")
             forward_server = config.get("server")[0].get("forward")
-            proxy_server = {"host": server.split(":")[0], "port": server.split(":")[1]}
+            proxy_server = {
+                "host": server.split(":")[0],
+                "port": server.split(":")[1],
+            }
             forward_servers = []
-            for server in forward_server[0].get("backends"):
-                server_address = server.get("address")
+            for backend in forward_server[0].get("backends"):
+                server_address = backend.get("address")
                 forward_servers.append({
                     "host": server_address.split(":")[0],
-                    "port": server_address.split(":")[1]
+                    "port": server_address.split(":")[1],
                 })
             print(proxy_server, forward_servers)
             return proxy_server, forward_servers
-    except Exception as e:
+    except (FileNotFoundError, KeyError, IndexError, TypeError) as e:
         print(f"Unable to load config file due to {str(e)}")
+    return None, None
